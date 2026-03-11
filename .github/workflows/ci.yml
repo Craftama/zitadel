@@ -1,13 +1,11 @@
 name: CI 
 
 on:
-  push:
-    tags-ignore:
-      - "*"
-    branches:
-      - "main"
-  pull_request:
   workflow_dispatch:
+    inputs:
+      placeholder:
+        description: "Disabled in fork - use build.yml instead"
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
