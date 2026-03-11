@@ -304,6 +304,16 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
 
       return callbackResponse;
     } else {
+      // When multiple sessions exist, let the user choose which profile to use
+      // instead of automatically selecting the most recent one
+      if (sessions.length > 1) {
+        return gotoAccounts({
+          request,
+          requestId: `oidc_${authRequest.id}`,
+          organization,
+        });
+      }
+
       let selectedSession = await findValidSession({ serviceConfig, sessions, authRequest });
 
       if (!selectedSession || !selectedSession.id) {
@@ -397,6 +407,15 @@ export async function handleSAMLFlowInitiation(params: FlowInitiationParams): Pr
     const loginNameUrl = constructUrl(request, "/loginname");
     loginNameUrl.searchParams.set("requestId", requestId);
     return NextResponse.redirect(loginNameUrl);
+  }
+
+  // When multiple sessions exist, let the user choose which profile to use
+  // instead of automatically selecting the most recent one
+  if (sessions.length > 1) {
+    return gotoAccounts({
+      request,
+      requestId,
+    });
   }
 
   // Try to find a valid session
