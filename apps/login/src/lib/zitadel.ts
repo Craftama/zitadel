@@ -133,22 +133,44 @@ export async function getHostedLoginTranslation({
   );
 }
 
+/**
+ * Craftama fork: branding per public host, e.g.
+ * BRANDING_HOST_ORGS="auth.brickshock.com=340286078416060420,other.example=123".
+ * On a mapped host every login page shows that organization's branding, whoever
+ * logs in; it only changes the look, not which users may log in.
+ */
+export function brandingOrgForHost(publicHost?: string): string | undefined {
+  const raw = process.env.BRANDING_HOST_ORGS;
+  if (!raw || !publicHost) {
+    return undefined;
+  }
+  const host = publicHost.replace(/^https?:\/\//, "").split(":")[0].toLowerCase();
+  for (const entry of raw.split(",")) {
+    const [mappedHost, orgId] = entry.split("=").map((part) => part.trim());
+    if (mappedHost && orgId && mappedHost.toLowerCase() === host) {
+      return orgId;
+    }
+  }
+  return undefined;
+}
+
 export async function getBrandingSettings({
   serviceConfig,
   organization,
 }: WithServiceConfig<{
   organization?: string;
 }>) {
+  const brandingOrganization = brandingOrgForHost(serviceConfig.publicHost) ?? organization;
   const fetcher = async () => {
     const settingsService: Client<typeof SettingsService> = await createServiceForHost(SettingsService, serviceConfig);
 
     return settingsService
-      .getBrandingSettings({ ctx: makeReqCtx(organization) }, {})
+      .getBrandingSettings({ ctx: makeReqCtx(brandingOrganization) }, {})
       .then((resp) => (resp.settings ? resp.settings : undefined));
   };
 
   return freshCache(
-    instanceCacheKey(serviceConfig, `getBrandingSettings-${organization || "instance"}`),
+    instanceCacheKey(serviceConfig, `getBrandingSettings-${brandingOrganization || "instance"}`),
     fetcher,
     getTTLForKey("getBrandingSettings", longCacheTTL),
   );
