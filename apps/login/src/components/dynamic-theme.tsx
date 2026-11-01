@@ -60,8 +60,8 @@ export function DynamicTheme({
                           <Logo
                             lightSrc={branding.lightTheme?.logoUrl}
                             darkSrc={branding.darkTheme?.logoUrl}
-                            height={150}
-                            width={150}
+                            height={160}
+                            width={400}
                           />
                         )}
 
@@ -105,7 +105,7 @@ export function DynamicTheme({
                           lightSrc={branding.lightTheme?.logoUrl}
                           darkSrc={branding.darkTheme?.logoUrl}
                           height={150}
-                          width={150}
+                          width={360}
                         />
                       )}
                     </div>
